@@ -162,7 +162,7 @@ class Group_10(nn.Module):
         super(Group_10, self).__init__()
 
         self.model = Conv2d_Sym(ch_in, ch_out, offset=1)
-        self.ps = PS(r=8, n_channel=n_class*20, batch_size=batch_size)
+        self.ps = PS(r=8, n_channel=n_class*8, batch_size=batch_size)
 
     def forward(self, x):
 
@@ -269,15 +269,17 @@ class Full_DRN(nn.Module):
 
 
 def main():
-    x = torch.randn([10, 3, 512, 512])
-    net = Full_DRN(channels=3, n_class=5, batch_size=10)
-    #out = net(x)
+    x = torch.randn([2, 3, 256, 256])
+    net = Full_DRN(channels=3, n_class=5, batch_size=2)
+    out = net(x)
     # print(out.shape)
     # print(net.state_dict().keys())
-
+    # count = 0
     for name, parameters in net.state_dict().items():
-        if 'weight' in name:
-            print(name, ':', type(parameters), ':', parameters.shape, '\n')
+        # if 'weight' in name and '.2.' not in name and 'extra.1' not in name:
+        print(name, ':', type(parameters), ':', parameters.shape, '\n')
+    #         count += 1
+    # print(count)
 
 
 if __name__ == "__main__":

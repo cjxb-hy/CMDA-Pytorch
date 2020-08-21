@@ -58,7 +58,7 @@ class MyLoss(nn.Module):
             loss += miu_dice * dice_loss
 
         regularizers = sum([torch.norm(parameters) for name,
-                            parameters in self.net.state_dict().items() if 'weight' in name])
+                            parameters in self.net.state_dict().items() if 'weight' in name and '.2.' not in name and 'extra.1' not in name])
 
         return loss + reg_coeff * regularizers
 

@@ -2,7 +2,7 @@ import __future__
 import numpy as np
 
 import torch
-from torch import nn
+from torch import logical_and, nn
 from torch.nn import functional as F
 
 keep_prob = 0.75
