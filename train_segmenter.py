@@ -2,20 +2,17 @@ import os
 import numpy as np
 
 import torch
-from torch import optim
+from torch import embedding, optim
 from torch.utils.data import DataLoader
 
 from myloss import MyLoss
-from dataset import Data_Loader
-from lib import _read_lists, _label_decomp
+from datasetnpy import Data_Loader
+from lib import _label_decomp
 import source_segmenter as drn
-from source_segmenter import Output
 
 
 def train():
 
-    train_fid = "./lists/mr_train_list"
-    val_fid = "./lists/mr_val_list"
     output_path = "./models/mr_baseline/"
 
     restore = True  # set True if resume training from stored model
@@ -26,6 +23,7 @@ def train():
     batch_size = 2
     epochs = 5
     optimizer = 'adam'
+    device = 'cpu'
 
     cost_kwargs = {
         "cross_flag": True,  # use cross entropy loss
@@ -43,36 +41,44 @@ def train():
     # train_list = _read_lists(train_fid)
     # val_list = _read_lists(val_fid)
 
-    train_set = Data_Loader('data/mr_train')
+    train_set = Data_Loader('./data/mr_train')
     train_loader = DataLoader(
         dataset=train_set, batch_size=batch_size, shuffle=True)
 
+    device = torch.device(device)
     net = drn.Full_DRN(channels=3, n_class=num_cls, batch_size=batch_size)
-    criterion = MyLoss(net, num_cls, cost_kwargs)
-    optimizer = optim.Adam(net.parameters(), lr=1e-3)
+    net = net.to(device)
+    criterion = MyLoss(net, num_cls, cost_kwargs).to(device)
+    optimizer = optim.Adam(net.parameters(), lr=0.01)
 
     best_loss = 1000
     for epoch in range(epochs):
         net.train()
-        loss = 0
-        for image, label in train_loader:
-            #image, label = image.to(), label.to()
+        cost = 0
+        for batch, [image, label] in enumerate(train_loader):
+            image, label = image.to(device), label.to(device)
             label = _label_decomp(num_cls, label)
             output = net(image)
-            print('one batch finish,start to get loss!')
-            loss = criterion(output, label)
+
+            cost, reg = criterion(output, label)
+            loss = torch.add(cost, reg)
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            print('Epoch:{}, Batch:{} finish!'.format(epoch, batch))
 
-        print('Epoch: {}, Loss/Train: {}'.format(epoch, loss.item()))
+        if epoch % 500 == 0:
+            for param_group in optimizer.param_groups:
+                param_group["lr"] *= 0.9
 
-        if loss < best_loss:
-            best_loss = loss
+        print('Training at Epoch: {}, Dice Loss is: {}'.format(epoch, cost.item()))
+
+        if cost < best_loss:
+            best_loss = cost
             path = os.path.join(output_path, 'model{}.pth'.format(epoch))
             torch.save(net.state_dict(), path)
-            print('save model:', path)
+            print('Epoch: {}, save model:{}'.format(epoch, path))
 
 
 if __name__ == "__main__":

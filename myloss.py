@@ -28,6 +28,7 @@ class MyLoss(nn.Module):
         return loss
 
     def _dice_loss_fun(self, logits, label):
+
         dice = 0
         eps = 1e-7
         softmaxpred = torch.nn.functional.softmax(logits, dim=1)
@@ -35,19 +36,24 @@ class MyLoss(nn.Module):
         for i in range(self.n_class):
             inse = torch.sum(softmaxpred[:, i, :, :] * label[:, i, :, :])
             l = torch.sum(softmaxpred[:, i, :, :] * softmaxpred[:, i, :, :])
-            r = torch.sum(label[:, i, :, :])
+            r = torch.sum(label[:, i, :, :] * label[:, i, :, :])
             dice += 2.0 * inse / (l + r + eps)
 
-        return -1.0 * dice / self.n_class
+        return 1.0 - dice / self.n_class
 
     def _get_cost(self, logits, label):
 
         loss = 0
-        dice_flag = self.cost_kwargs.pop("dice_flag", True)
-        cross_flag = self.cost_kwargs.pop("cross_flag", False)
-        miu_dice = self.cost_kwargs.pop("miu_dice", 1.0)
-        miu_cross = self.cost_kwargs.pop("miu_cross", 1.0)
-        reg_coeff = self.cost_kwargs.pop("regularizer", 1e-4)
+        # dice_flag = self.cost_kwargs.pop("dice_flag", True)
+        # cross_flag = self.cost_kwargs.pop("cross_flag", False)
+        # miu_dice = self.cost_kwargs.pop("miu_dice", 1.0)
+        # miu_cross = self.cost_kwargs.pop("miu_cross", 1.0)
+        # reg_coeff = self.cost_kwargs.pop("regularizer", 1e-4)
+        dice_flag = True
+        cross_flag = False
+        miu_dice = 1.0
+        miu_cross = 1.0
+        reg_coeff = 1e-4
 
         if cross_flag is True:
             weighted_loss = self._softmax_weighted_loss(logits, label)
@@ -60,9 +66,9 @@ class MyLoss(nn.Module):
         regularizers = sum([torch.norm(parameters) for name,
                             parameters in self.net.state_dict().items() if 'weight' in name and '.2.' not in name and 'extra.1' not in name])
 
-        return loss + reg_coeff * regularizers
+        return loss, reg_coeff * regularizers
 
-    def forward(self, logits, label,):
+    def forward(self, logits, label):
         return self._get_cost(logits, label)
 
 

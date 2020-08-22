@@ -3,7 +3,7 @@ import random
 import argparse
 
 import torch
-from torch import log, optim
+from torch import optim
 from torch.utils.data import DataLoader
 
 from loss import MyLoss
