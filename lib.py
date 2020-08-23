@@ -76,6 +76,16 @@ def load_model(net, model_path):
     return model_dict
 
 
+def ct_copy_model(net, model_path):
+
+    save_model = torch.load(model_path)
+    model_dict = net.state_dict()
+    state_dict = {k1: v2 for (k1, v1), (k2, v2) in zip(
+        model_dict.items(), save_model.items())}
+    model_dict.update(state_dict)
+    return model_dict
+
+
 if __name__ == "__main__":
     # fid = "./lists/mr_train_list"
     # _list = _read_lists(fid)
@@ -88,11 +98,12 @@ if __name__ == "__main__":
     # print(x.shape)
     # y = _label_decomp(5, x)
     # print(y.shape)
-    predicter = torch.randn([2, 5, 256, 256])
-    predicter = pixel_wise_softmax_2(predicter)
-    predicter = predicter.permute(0, 2, 3, 1)
-    compact_pred = torch.argmax(predicter, dim=3)  # b,h,w
-    print(compact_pred.shape)
-    pred = torch.nn.functional.one_hot(compact_pred, 5)  # b,h,w,5
-    pred = pred.permute(0, 3, 1, 2)
-    print(pred.shape)
+    # predicter = torch.randn([2, 5, 256, 256])
+    # predicter = pixel_wise_softmax_2(predicter)
+    # predicter = predicter.permute(0, 2, 3, 1)
+    # compact_pred = torch.argmax(predicter, dim=3)  # b,h,w
+    # print(compact_pred.shape)
+    # pred = torch.nn.functional.one_hot(compact_pred, 5)  # b,h,w,5
+    # pred = pred.permute(0, 3, 1, 2)
+    # print(pred.shape)
+    pass

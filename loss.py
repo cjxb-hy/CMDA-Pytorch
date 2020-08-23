@@ -3,10 +3,8 @@ from torch import nn
 
 
 class MyLoss(nn.Module):
-    def __init__(self, train_config, cost_kwargs, net1, net2, net3, net4, net5):
+    def __init__(self, cost_kwargs, net1, net2, net3, net4, net5):
         super(MyLoss, self).__init__()
-
-        self.train_config = train_config
 
         self.cost_kwargs = cost_kwargs
         # coefficient for discriminator loss
@@ -58,7 +56,7 @@ class MyLoss(nn.Module):
         gen_loss += self.lambda_mask_loss * m_gen_loss
         dis_reg += self.lambda_mask_loss * m_dis_reg
 
-        return dis_loss + 1.0 / self.train_config['dis_sub_iter'] * dis_reg, fixed_coeff_reg, gen_loss + 1.0 / self.train_config['gen_sub_iter'] * gen_reg
+        return dis_loss, gen_loss, fixed_coeff_reg, dis_reg, gen_reg
 
     def forward(self, ct_logits, mr_logits,  ct_cls_logits, mr_cls_logits, ct_mask_logits, mr_mask_logits):
         return self._get_cost(ct_logits, mr_logits,  ct_cls_logits, mr_cls_logits, ct_mask_logits, mr_mask_logits)

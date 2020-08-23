@@ -573,13 +573,22 @@ class Create_Mask_Critic(nn.Module):
 
 def main():
     pass
-    # x = torch.randn([10, 3, 256, 256])
-    # y = torch.randn([10, 3, 256, 256])
-    # net1 = Create_Zip_Network(channels=3, n_class=5, batch_size=10)
-    # o1, o2, o3, o4 = net1(x, y)
-    # print(o1.shape)
-    # print(o2.shape)
-    # print(o3.shape)
+    x = torch.randn([2, 3, 256, 256])
+    y = torch.randn([2, 3, 256, 256])
+    net1 = Create_Mr_Network(channels=3)
+    net2 = Create_Ct_Network(channels=3)
+    count = 0
+    for name, parameters in net1.state_dict().items():
+        # if 'weight' in name and '.2.' not in name and 'extra.1' not in name:
+        print(name, ':', type(parameters), ':', parameters.shape, '\n')
+        count += 1
+    print('net1: ', count)
+    count = 0
+    for name, parameters in net2.state_dict().items():
+        # if 'weight' in name and '.2.' not in name and 'extra.1' not in name:
+        print(name, ':', type(parameters), ':', parameters.shape, '\n')
+        count += 1
+    print('net2: ', count)
 
     # x1 = torch.randn([10, 256, 32, 32])
     # net2 = Create_Second_Half(channels=3, n_class=5, batch_size=10)
